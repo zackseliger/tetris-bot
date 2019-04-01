@@ -8,3 +8,6 @@ Chimp game example
 https://www.pygame.org/docs/tut/ChimpLineByLine.html
 Sample python game in github (we debug this file by changing all xrange to range)
 https://gist.github.com/silvasur/565419
+
+Pseudo code
+class window:
