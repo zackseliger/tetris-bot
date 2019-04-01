@@ -11,3 +11,9 @@ https://gist.github.com/silvasur/565419
 
 Pseudo code
 class window:
+import board, player
+if __name__ == '__main__':
+run the game.
+
+class board:
+
