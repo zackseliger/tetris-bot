@@ -16,4 +16,10 @@ if __name__ == '__main__':
 run the game.
 
 class board:
+assign values to cell_size, cols, rows, delay, max fps
+assign different colors for different kinds of blocks
+
+new_board():
+construct and return a new board with cols and rows.
+
 
