@@ -1,5 +1,6 @@
 # Player class for Tetris
 import time
+import math
 class Player:
 # if human player, connect moves to keyboard events
 # if not, connect moves to highest heuristic score
@@ -20,13 +21,431 @@ class Player:
                 #maybe represented as costs of clearance or closeness to top
         # minimax_ab and minimax both seemed useful so I added them and combind findMove
         # NOTE: caching previous heuristics would cut down on runtime as the game goes on
-    def heuristic(self, boardState):
+    def heuristic(self, board):
         """copy the boardState and recursively call itself over each iteration of
         possible moves to that state"""
         #notes from heuristic design paper
         # they used a dampening function to reduce the importance
             # of rows with high cost to clear (I piece horizontal)
-        
+        heuristic_value = 0
+        #If the board is terminal, give a large heuristic value in order to represent that there is no game board worse
+        #than this board.
+        if board.isTerminal:
+            return 1000000000
+        #Check whether there is a row that is already full and ready to be cleared out. If yes, increment heuristic
+        #value.
+        for row in range(len(board.board)):
+            for col in range(len(board.board[row])):
+                if board.board[row][col] == 0:
+                    break
+                if board.board[row][col] == 1 and col == len(board.board[row])- 1:
+                    heuristic_value += 0.3
+                continue
+        #Check whether there is any hole or gap in any row, If yes, increment heuristic value.
+        for row in range(len(board.board)):
+            heuristic_value += Math.pow(self.heuristic_one_row(board, row, heuristic_value), (1/4.384))
+        return heuristic_value
+
+    # This helper function uses a loop to update the heuristic value based on any dependent row above the hole.
+    # Recommend: add a helper function in board.py to get the highest point in this game.
+    def heuristic_one_row(self, board, row, heuVal):
+        if not board.board:
+            return 0
+        for col in range(len(board.board[row])):
+            if row + 3 >= len(board.board[row]) - 1:
+                if board.board[row][col] == 0 and board.board[row + 1][col] == 1 and board.board[row+2][col]== 1\
+                        and board.board[row+3][col] == 1:
+                    heuVal += 17.72
+                    heuVal += self.heuristic_one_row(board, row+1, heuVal + 1.16)
+            if col >= 2 and col <= len(board.board[row]) - 4:
+                if board.board[row][col] == board.board[row][col+1] and board.board[row][col] == 0:
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.63
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 0\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.15
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col + 2] == 0\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.15
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 1:
+                        heuVal += 1.31
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.31
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col -1] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.79
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.79
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.72
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.74
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 1:
+                        heuVal += 2.74
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.18
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.18
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 1:
+                        heuVal += 1.77
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 3] == 1:
+                        heuVal += 2.09
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.09
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 5.48
+
+
+                if not board[row][col] == board.board[row][col+1] and board[row][col] == 0:
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 1.34
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.34
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col -1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.69
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 1.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.55
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 15
+            if col == 1:
+                if board.board[row][col] == board.board[row][col+1] and board.board[row][col] == 0:
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.63
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 0\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.15
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col + 2] == 0\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.15
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 1:
+                        heuVal += 1.31
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col -1] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.79
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.79
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.72
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 1:
+                        heuVal += 2.74
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.18
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.18
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 5.48
+
+
+                if not board[row][col] == board.board[row][col+1] and board[row][col] == 0:
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.55
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 1.34
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col -1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.69
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 15
+            if col == 0:
+                if board.board[row][col] == board.board[row][col+1] and board.board[row][col] == 0:
+                    if board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 0:
+                        heuVal += 1.79
+                    if board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 0\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 2.18
+                    if board.board[row + 1][col + 2] == 0 and board.board[row + 1][col + 3] == 1:
+                        heuVal += 2.09
+                    if board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1\
+                            and board.board[row + 1][col + 3] == 0:
+                        heuVal += 5.48
+
+                if not board[row][col] == board.board[row][col+1] and board[row][col] == 0:
+                    if board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.55
+                    if board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 15
+
+            if col == len(board.board[row]) - 1:
+                if board[row+1][col-2] == 0 and board[row+1][col-1] == 0:
+                    heuVal += 2.57
+                if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1:
+                    heuVal += 4.38
+                if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                        and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                    heuVal += 2.55
+                if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                        and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col - 1] == 1 \
+                        and board.board[row + 1][col + 2] == 0:
+                    heuVal += 15
+            if col == len(board.board[row]) - 2:
+                if board.board[row][col] == board.board[row][col+1] and board.board[row][col] == 0:
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0:
+                        heuVal += 1.55
+                if not board[row][col] == board.board[row][col+1] and board[row][col] == 0:
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0:
+                        heuVal += 1.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col + 1] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0:
+                        heuVal += 1.34
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col -1] == 1:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1:
+                        heuVal += 2.69
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col - 1] == 1:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1:
+                        heuVal += 2.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1:
+                        heuVal += 15
+            if col == len(board.board[row]) - 3:
+                if board.board[row][col] == board.board[row][col+1] and board.board[row][col] == 0:
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.63
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 0:
+                        heuVal += 2.15
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col + 2] == 0:
+                        heuVal += 2.15
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.31
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 0 and board.board[row + 2][col -1] == 1:
+                        heuVal += 1.79
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1:
+                        heuVal += 1.79
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.72
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.74
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col - 1] == 1:
+                        heuVal += 2.18
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1:
+                        heuVal += 2.18
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1:
+                        heuVal += 2.09
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 1 and board.board[row + 2][col + 2] == 1:
+                        heuVal += 5.48
+
+
+                if not board[row][col] == board.board[row][col+1] and board[row][col] == 0:
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col + 1] == 0\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 1.34
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 1.34
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col -1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.57
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.69
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.01
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 4.38
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 1][col + 2] == 1:
+                        heuVal += 1.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 1][col + 1] == 0 and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 2] == 1:
+                        heuVal += 2.55
+                    if board.board[row + 1][col - 2] == 1 and board.board[row + 1][col - 1] == 0 \
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 2.55
+                    if board.board[row + 1][col - 2] == 0 and board.board[row + 1][col - 1] == 1 \
+                            and board.board[row + 2][col - 1] == 1\
+                            and board.board[row + 1][col + 1] == 1 and board.board[row + 2][col + 1] == 1\
+                            and board.board[row + 1][col + 2] == 0:
+                        heuVal += 15
+        return heuVal
+
     def getInput(self):
         """check keyboard input for human player"""
     def drawPlayer(self):
