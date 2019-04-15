@@ -1,6 +1,7 @@
 import math
-from settings import config
-class Tetromino(object):
+from Settings import config
+
+class Tetromino:
     def __init__(self, type):
         self.type = type
         self.points = []

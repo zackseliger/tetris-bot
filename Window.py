@@ -1,13 +1,13 @@
 import pygame
 import random
 from Tetromino import Tetromino
-from settings import config
+from Settings import *
 from Board import Board
+from Player import *
 
+class Window:
 
-class Window(object):
-
-    def __init__(self):
+    def __init__(self, player):
         self.running = True
         self.screen = pygame.display.set_mode((500, 600))
         self.clock = pygame.time.Clock()
@@ -24,10 +24,14 @@ class Window(object):
         self.scoreGUIText = self.font.render("Score:", True, (255, 255, 255))
         self.overGUIText = self.font.render("Game Over", True, (255, 255, 255), (0,0,0))
         self.scoreText = self.font.render(str(self.score), True, (255, 255, 255))
+        self.player = player
 
     def update(self):
         # sleeping to the tune of 'maxfps' fps
         self.clock.tick(config['maxfps'])
+
+        # update the player (checks on our seperate thread)
+        self.player.update()
 
         # is game over?
         if self.isGameOver():
@@ -38,22 +42,23 @@ class Window(object):
             # quit signal sent by hitting 'x' or something
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.KEYDOWN and self.fallingPiece is not None:
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+            if self.fallingPiece is not None:
+                # moving piece if we've recieved corresponding events
+                if event.type == userEventTypes['right']:
                     self.fallingPiece.moveX(1)
                     # prevents piece from moving through other pieces
                     if self.isPieceDoneFalling(self.fallingPiece):
                         self.fallingPiece.moveX(-1)
-                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                elif event.type == userEventTypes['left']:
                     self.fallingPiece.moveX(-1)
                     # prevents piece from moving through other pieces
                     if self.isPieceDoneFalling(self.fallingPiece):
                         self.fallingPiece.moveX(1)
-                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                elif event.type == userEventTypes['down']:
                     self.fallingPiece.moveDown(1)
                     self.solidifyPieceIfNecessary()
                     self.mustMoveDown = False
-                elif event.key == pygame.K_w or event.key == pygame.K_UP:
+                elif event.type == userEventTypes['rotate']:
                     self.rotatePiece(self.fallingPiece)
         if self.gameOver:
             return
@@ -168,7 +173,7 @@ class Window(object):
 
 # initializing our window
 pygame.init()
-window = Window()
+window = Window(HumanPlayer())
 # main game loop
 while window.running:
     window.update()

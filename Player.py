@@ -1,7 +1,47 @@
 # Player class for Tetris
+import threading
+from Settings import *
 import time
-import math
+
 class Player:
+    def __init__(self):
+        self.thread = threading.Thread(target=(self.getMoves))
+
+    def getMoves(self):
+        pass
+
+    # the explicit definitions for sending events
+    def moveLeft(self):
+        pygame.event.post(userEvents['left'])
+    def moveRight(self):
+        pygame.event.post(userEvents['right'])
+    def moveDown(self):
+        pygame.event.post(userEvents['down'])
+    def moveRotate(self):
+        pygame.event.post(userEvents['rotate'])
+
+    def update(self):
+        if self.thread.is_alive() == False:
+            self.thread = threading.Thread(target=(self.getMoves))
+            self.thread.start()
+
+
+class HumanPlayer(Player):
+    def getMoves(self):
+        time.sleep(0.1)  # so that keyboard inputs aren't recognized too quickly
+
+        # checking keys and possibly sending events
+        keys = pygame.key.get_pressed()  # checking pressed keys
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.moveLeft()
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.moveRight()
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            self.moveDown()
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
+            self.moveRotate()
+
+class PaperPlayer(Player):
 # if human player, connect moves to keyboard events
 # if not, connect moves to highest heuristic score
     def __init__(self):
@@ -14,7 +54,7 @@ class Player:
         self.rotation = 1
         # if rotation is > 4, reset to 1
 
-    
+
     #comparisons to a4-Player
         # rather than returning negative for 2nd player good positions,
             # return negative for positions that increases likelihood of failure
@@ -519,7 +559,7 @@ class Player:
                     bestVal = val
         # returns the best move and best score as a tuple
         return bestMove, bestVal
-    
+
     # minimax_ab copied from my a5-player
     def minimax_ab(self, board, depth, alpha, beta):
         # cited Lecture 12 Games III PDF
@@ -558,7 +598,7 @@ class Player:
                         break
         # returns the best move and best score as a tuple
         return move, bestvalue
-    
+
     def findMove(self, board):
         #move, score = self.minimax(board, self.depthLimit)
         #move, score = self.minimax_ab(board, self.depthLimit, -math.inf, math.inf)

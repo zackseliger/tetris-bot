@@ -1,5 +1,6 @@
 # Board for Tetris
-from settings import config
+from Settings import config
+
 class Board:
     def __init__(self, state=None):
         self.board = []
@@ -53,6 +54,8 @@ class Board:
                     continue
             if is_cleared:
                 full_rows.append(i)
+
+        # delete full rows and add an empty row at the top
         for i in range(len(full_rows)):
             self.board.pop(full_rows[i])
             for j in range(len(full_rows)):
@@ -62,6 +65,9 @@ class Board:
             self.board.insert(0, [])
             for c in range(config['cols']):
                 self.board[0].append(0)
+
+        # return number of rows we deleted
+        return len(full_rows)
 
     def is_piece_done_falling(self, tetromino):
         """determines if piece is at the bottom of its fall"""
