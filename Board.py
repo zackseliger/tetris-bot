@@ -1,10 +1,13 @@
 # Board for Tetris
 from Settings import config
+from Tetromino import *
+import random
 
 class Board:
     def __init__(self, state=None):
         self.board = []
         self.size = config["rows"], config["cols"]
+        self.fallingPiece = Tetromino(random.randint(1,7))
         for r in range(self.size[0]):
             self.board.append([])
             for c in range(self.size[1]):
@@ -16,18 +19,19 @@ class Board:
                 if state[i] == "1":
                     self.board[(i / self.size[0])][(i % self.size[1])] = 1
 
-    def get_board(self):
+    def getBoard(self):
+        """Returns the array representation of the game board"""
         return self.board
 
-    def get_state(self):
-        """converts board to a string"""
+    def getState(self):
+        """returns the string representation of the game board"""
         state = ""
         for row in range(len(self.board)):
             for col in range(len(self.board[row])):
                 state += self.board[row][col]
         return state
 
-    def is_terminal(self):
+    def isTerminal(self):
         """determines if the tiles have reached the top of the game"""
         is_over = False
         for c in range(len(self.board[0])):
@@ -36,13 +40,18 @@ class Board:
                 break
         return is_over
 
-    def make_move(self, piece):
-        """ given a tetromino, update points in board"""
-        for point in piece.getPoints():
+    def makeFallingPiece(self, tetr):
+        self.fallingPiece = tetr
+
+    def makeMove(self):
+        """ updates board array with squares from fallen tetromino
+        (only called when tetromino is done falling)"""
+        for point in self.fallingPiece.getPoints():
             self.board[point[0]][point[1]] = 1
 
-    def check_tetris(self):
-        """check rows that are full and remove them, return amount of rows removed """
+    def checkTetris(self):
+        """check rows that are full (full rows called tetris)
+         and remove them, return amount of rows removed """
         # delete full rows and add blank rows at top
         full_rows = []
         # get index of rows that are full
@@ -69,9 +78,45 @@ class Board:
         # return number of rows we deleted
         return len(full_rows)
 
-    def is_piece_done_falling(self, tetromino):
-        """determines if piece is at the bottom of its fall"""
-        for point in tetromino.getPoints():
+    def rotatePiece(self):
+        """Rotates the piece, with respect to the
+        tetromino's type, only if allowable"""
+        if self.fallingPiece.type == 2:
+            return
+
+        # get original state in case test cases don't work
+        originalState = self.fallingPiece.getState()
+        self.fallingPiece.rotate(1)
+        tests = []
+
+        # get tests cases for rotation correction
+        if self.fallingPiece.type == 1:
+            if self.fallingPiece.rotationState == 0:
+                tests = [(-1, 0)]
+            elif self.fallingPiece.rotationState == 1:
+                tests = [(-1, 0), (0, 1)]
+        else:
+            if self.fallingPiece.rotationState == 1:
+                tests = [(1, 0), (1, -1), (0, 2), (1, 2)]
+            elif self.fallingPiece.rotationState == 3:
+                tests = [(-1, 0), (-1, -1), (0, 2), (-1, 2)]
+
+        # run through test cases for piece
+        for testTuple in tests:
+            if not (self.isPieceDoneFalling()):
+                break
+            self.fallingPiece.moveDown(-testTuple[1])
+            self.fallingPiece.moveX(testTuple[0])
+
+        # if no test cases work, undo rotation
+        if self.isPieceDoneFalling():
+            self.fallingPiece.setState(originalState)
+
+    def isPieceDoneFalling(self):
+        """determines if piece is at the bottom of its fall:
+        Checks if board is out of bounds either left right or upwards
+        then checks if piece is already in board, indicating that its fallen"""
+        for point in self.fallingPiece.getPoints():
             if point[0] >= config['rows']:
                 return True
             elif point[1] < 0 or point[1] >= config['cols']:
@@ -79,11 +124,9 @@ class Board:
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
                 if self.board[r][c] != 0:
-                    for point in tetromino.getPoints():
+                    for point in self.fallingPiece.getPoints():
                         if r == point[0] and c == point[1]:
                             return True
         return False
-# board calls getMove by Player: returns LEFT RIGHT DOWN ROTATE NOMOVE
-    # player has a way of determining which move to make
-        # human players key input
-# updates board
+
+
