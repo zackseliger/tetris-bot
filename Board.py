@@ -2,6 +2,7 @@
 from Settings import config
 from Tetromino import *
 import random
+import math
 
 class Board:
     def __init__(self, state=None):
@@ -17,7 +18,7 @@ class Board:
             for i in range(len(state)):
                 # row = i / size[0], col = i % size[1]
                 if state[i] == "1":
-                    self.board[(i / self.size[0])][(i % self.size[1])] = 1
+                    self.board[math.floor(i / self.size[1])][(i % self.size[1])] = 1
 
     def getBoard(self):
         """Returns the array representation of the game board"""
