@@ -5,6 +5,7 @@ import time
 from Board import *
 import math
 
+
 class Player:
     def __init__(self):
         self.thread = threading.Thread(target= self.getMoves)
@@ -55,6 +56,7 @@ class HumanPlayer(Player):
 
 
 class PaperPlayer(Player):
+
     def __init__(self):
         # initializes time, rotation
         time.clock()
@@ -488,22 +490,39 @@ class PaperPlayer(Player):
                         heuVal += 15
         return heuVal
 
+    def getValidMoves(self):
+        return ("LEFT","RIGHT","DOWN","ROTATE", "NONE")
+
+    def getChild(self, move):
+        newBoard = Board(self.board.getState())
+        newPiece = self.board.fallingPiece
+        if move == "LEFT":
+            newBoard.makeFallingPiece(newPiece.moveX(-1))
+        if move == "RIGHT":
+            newBoard.makeFallingPiece(newPiece.moveX(1))
+        if move == "DOWN":
+            newBoard.makeFallingPiece(newPiece.moveDown)
+        if move == "ROTATE":
+            newBoard.makeFallingPiece(newPiece.rotate(1))
+        #while not newBoard.isPieceDoneFalling():
+        #    newBoard.makeFallingPiece(newPiece.moveDown)
+        #newBoard.makeMove()
+        return newBoard
+
     def minimax(self, depth, board):
         """Depth is the amount of time remaining, uses self.board"""
         # minimax copied from my a5-player - cited Lecture 11 PDF
         term = board.isTerminal()
         bestMove = None
         # id terminal positions and assign them constant w/o unneccesasary processing
-        if term == -1:
-            return None, self.DRAW_SCORE
-        if term == 0:
-            return None, self.P1_WIN_SCORE
-        if term == 1:
-            return None, self.P2_WIN_SCORE
+        if term:
+            return None, 10000000000
         # stop at max depth and return approp heuristic val
         if not term and depth <= 0:
             return None, self.heuristic(board)
         bestVal = math.inf
+        # getValidMoves returns list of Boards after placement of piece
+        # heuristic
         for col in board.getValidMoves():
             val = self.minimax(self.board.getChild(col), depth - 1)[1]
             if self.board.turn == 1:
@@ -513,7 +532,16 @@ class PaperPlayer(Player):
         # returns the best move and best score as a tuple
         return bestMove, bestVal
 
-    def findMove(self):
+    def getMoves(self):
         """calls minimax, sets time constaint in milliseconds"""
         move, score = self.minimax(self.board, self.maxTime - pygame.time.get_ticks())
-        return move
+        # checking keys and possibly sending events
+        if move == "LEFT":
+            self.moveLeft()
+        if move == "RIGHT":
+            self.moveRight()
+        if move == "DOWN":
+            self.moveDown()
+        if move == "ROTATE":
+            self.moveRotate()
+
