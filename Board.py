@@ -29,8 +29,15 @@ class Board:
         state = ""
         for row in range(len(self.board)):
             for col in range(len(self.board[row])):
-                state += self.board[row][col]
+                state += str(self.board[row][col])
         return state
+
+    def makeCopy(self):
+        result = Board(self.getState)
+        pieceState = self.fallingPiece.getState()
+        newPiece = Tetromino(pieceState[2])
+        newPiece.setState(pieceState)
+        result.fallingPiece = Tetromino(newPiece)
 
     def isTerminal(self):
         """determines if the tiles have reached the top of the game"""
@@ -41,8 +48,14 @@ class Board:
                 break
         return is_over
 
-    def makeFallingPiece(self, tetr):
-        self.fallingPiece = tetr
+    def setPiece(self, tetr):
+        self.fallingPiece = Tetromino(tetr.type)
+        self.fallingPiece.setState(tetr.getState())
+
+    def makePieceFall(self):
+        while not self.isPieceDoneFalling():
+            self.fallingPiece.moveDown(1)
+        self.fallingPiece.moveDown(-1)
 
     def makeMove(self):
         """ updates board array with squares from fallen tetromino

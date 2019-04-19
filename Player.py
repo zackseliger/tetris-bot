@@ -54,6 +54,25 @@ class HumanPlayer(Player):
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.moveRotate()
 
+class AIPlayer(Player):
+    def __init__(self):
+        super().__init__()
+        self.madeMove = False
+
+    def getMoves(self):
+        if self.madeMove == True:
+            return
+        #newBoard = self.board.makeCopy()
+        #newBoard.makePieceFall()
+        #newBoard.makeMove()
+
+'''b = Board("0000000000"+
+          "1000000000")
+print(b.getState())
+a = b.makeCopy()
+a.makePieceFall()
+print(b.getState())
+print(a.getState())'''
 
 class PaperPlayer(Player):
 

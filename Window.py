@@ -70,7 +70,7 @@ class Window:
         self.slowTimer = 0
         # if fallingPiece is none, make a new falling piece
         if self.board.fallingPiece is None:
-            self.board.makeFallingPiece(Tetromino(random.randint(1, 7)))
+            self.board.setPiece(Tetromino(random.randint(1, 7)))
         # move piece down if not moved down before
         if self.mustMoveDown:
             self.board.fallingPiece.moveDown(1)
