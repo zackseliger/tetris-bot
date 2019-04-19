@@ -68,7 +68,7 @@ class Tetromino:
             if point[1] < 0 or point[1] >= config['cols']:
                 for i in range(len(self.points)):
                     self.points[i] = (self.points[i][0], self.points[i][1] - amt)
-                return
+                return False
 
     def getState(self):
         return [self.points.copy(), self.rotationState, self.type]
@@ -83,14 +83,15 @@ class Tetromino:
         # some shapes only get rotated in some ways
         if self.type == 2:
             return
-        if self.type == 1 and self.points[0][0] != self.points[0][0]:
+        if self.type == 1 and self.rotationState > 0:
             c = self.points[0][1]
+            h = self.points[0][0]
             self.points = []
             self.rotationState = 0
-            self.points.append((0, c))
-            self.points.append((0, c + 1))
-            self.points.append((0, c - 2))
-            self.points.append((0, c - 1))
+            self.points.append((h, c))
+            self.points.append((h, c + 1))
+            self.points.append((h, c - 2))
+            self.points.append((h, c - 1))
             return
 
         # update rotation state

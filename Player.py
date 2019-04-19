@@ -57,22 +57,55 @@ class HumanPlayer(Player):
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
-        self.madeMove = False
+
+    def heuristic(self, board):
+        result = 0
+        emptyRow = False
+
+        # number of blocks on filled rows + first non-filled row
+        for r in range(len(board.board)-1, -1, -1):
+            for c in range(len(board.board[r])):
+                if board.board[r][c] != 0:
+                    result += 1
+                else:
+                    emptyRow = True
+
+            if emptyRow == True:
+                break
+            else:
+                result += 10
+
+        return result / (board.getHeight()+1)
 
     def getMoves(self):
-        if self.madeMove == True:
+        if self.board.fallingPiece is None:
             return
-        #newBoard = self.board.makeCopy()
-        #newBoard.makePieceFall()
-        #newBoard.makeMove()
 
-'''b = Board("0000000000"+
-          "1000000000")
-print(b.getState())
-a = b.makeCopy()
-a.makePieceFall()
-print(b.getState())
-print(a.getState())'''
+        biggestHeuristic = 0
+        biggestState = None
+        validMoves = self.board.getValidMoves()
+        for state in validMoves:
+            hValue = self.heuristic(Board(state[1]))
+            if hValue > biggestHeuristic:
+                biggestHeuristic = hValue
+                biggestState = state
+
+        if biggestState is not None:
+            for i in range(abs(biggestState[0][0])):
+                if biggestState[0][0] > 0:
+                    self.moveRight()
+                if biggestState[0][0] < 0:
+                    self.moveLeft()
+            a = self.board.fallingPiece.rotationState
+            while a != biggestState[0][1]:
+                self.moveRotate()
+                a += 1
+                if a > 3:
+                    a = 0
+                if self.board.fallingPiece.type == 1 and a > 1:
+                    a = 0
+                if self.board.fallingPiece.type == 2:
+                    a = 0
 
 class PaperPlayer(Player):
 
@@ -563,4 +596,3 @@ class PaperPlayer(Player):
             self.moveDown()
         if move == "ROTATE":
             self.moveRotate()
-

@@ -5,9 +5,7 @@ from Settings import *
 from Board import Board
 from Player import *
 
-
 class Window:
-
     def __init__(self, player):
         self.running = True
         self.screen = pygame.display.set_mode((500, 600))
@@ -65,12 +63,12 @@ class Window:
             return
         # moving pieces down and checking for finalizing piece position
         self.slowTimer += 1
-        if self.slowTimer < 60:
+        if self.slowTimer < 5:
             return
         self.slowTimer = 0
         # if fallingPiece is none, make a new falling piece
         if self.board.fallingPiece is None:
-            self.board.setPiece(Tetromino(random.randint(1, 7)))
+            self.board.makeNewPiece()
         # move piece down if not moved down before
         if self.mustMoveDown:
             self.board.fallingPiece.moveDown(1)
@@ -138,9 +136,10 @@ class Window:
         pygame.display.flip()
 
 # initializing our window
-pygame.init()
-window = Window(HumanPlayer())
+'''pygame.init()
+window = Window(AIPlayer())
 # main game loop
 while window.running:
     window.update()
     window.draw()
+'''

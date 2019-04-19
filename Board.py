@@ -8,7 +8,9 @@ class Board:
     def __init__(self, state=None):
         self.board = []
         self.size = config["rows"], config["cols"]
-        self.fallingPiece = Tetromino(random.randint(1,7))
+        self.bag = [1,2,3,4,5,6,7]
+        self.fallingPiece = None
+        self.makeNewPiece()
         for r in range(self.size[0]):
             self.board.append([])
             for c in range(self.size[1]):
@@ -33,11 +35,27 @@ class Board:
         return state
 
     def makeCopy(self):
-        result = Board(self.getState)
+        result = Board(self.getState())
         pieceState = self.fallingPiece.getState()
         newPiece = Tetromino(pieceState[2])
         newPiece.setState(pieceState)
-        result.fallingPiece = Tetromino(newPiece)
+        result.fallingPiece = newPiece
+        return result
+
+    # height is the number of rows that have a block in them
+    def getHeight(self):
+        currHeight = 0
+        for r in range(len(self.board)-1, -1, -1):
+            foundBlock = False
+            for c in range(len(self.board[r])):
+                if self.board[r][c] != 0:
+                    foundBlock = True
+                    currHeight += 1
+                    break
+
+            if foundBlock == False:
+                break
+        return currHeight
 
     def isTerminal(self):
         """determines if the tiles have reached the top of the game"""
@@ -56,6 +74,51 @@ class Board:
         while not self.isPieceDoneFalling():
             self.fallingPiece.moveDown(1)
         self.fallingPiece.moveDown(-1)
+
+    def getValidMoves(self):
+        result = []
+        initialBoard = self.makeCopy()
+        rotationStates = []
+
+        # see how many rotation states we have
+        i = 0
+        while i < 4 and initialBoard.fallingPiece.rotationState not in rotationStates:
+            rotationStates.append(initialBoard.fallingPiece.rotationState)
+            initialBoard.fallingPiece.rotate(1)
+
+        for i in range(len(rotationStates)):
+            moveDist = 0
+            rotationBoard = self.makeCopy()
+
+            # rotate fallingPieces to our current rotationState, our starting point
+            while rotationBoard.fallingPiece.rotationState != rotationStates[i]:
+                rotationBoard.fallingPiece.rotate(1)
+
+            # move left/right until we can't
+            moveRight = True
+            moveLeft = True
+            while moveLeft or moveRight:
+                leftBoard = rotationBoard.makeCopy()
+                rightBoard = rotationBoard.makeCopy()
+                if moveLeft:
+                    movePossible = leftBoard.fallingPiece.moveX(-moveDist)
+                    leftBoard.makePieceFall()
+                    if leftBoard.isPieceDoneFalling() or movePossible == False:
+                        moveLeft = False
+                    else:
+                        leftBoard.makeMove()
+                        result.append(((-moveDist, leftBoard.fallingPiece.rotationState), leftBoard.getState()))
+                if moveRight:
+                    movePossible = rightBoard.fallingPiece.moveX(moveDist)
+                    rightBoard.makePieceFall()
+                    if rightBoard.isPieceDoneFalling() or movePossible == False:
+                        moveRight = False
+                    elif moveDist != 0:
+                        rightBoard.makeMove()
+                        result.append(((moveDist, rightBoard.fallingPiece.rotationState), rightBoard.getState()))
+                moveDist += 1
+
+        return result
 
     def makeMove(self):
         """ updates board array with squares from fallen tetromino
@@ -143,4 +206,22 @@ class Board:
                             return True
         return False
 
+    def makeNewPiece(self):
+        if len(self.bag) == 0:
+            self.bag = [1, 2, 3, 4, 5, 6, 7]
+        randInt = random.choice(self.bag)
+        self.bag.remove(randInt)
+        self.fallingPiece = Tetromino(randInt)
 
+    def print(self):
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                inPiece = False
+                for point in self.fallingPiece.points:
+                    if point[0] == r and point[1] == c:
+                        print("-", end='')
+                        inPiece = True
+                        break
+                if not inPiece:
+                    print(self.board[r][c], end='')
+            print()
