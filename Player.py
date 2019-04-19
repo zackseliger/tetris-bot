@@ -1,6 +1,6 @@
 # Player class for Tetris
 import threading
-from Settings import *
+from settings import *
 import time
 from Board import *
 import math
@@ -59,33 +59,79 @@ class AIPlayer(Player):
         super().__init__()
 
     def heuristic(self, board):
-        result = 0
-        fullRow = True
-
-        # number of blocks on filled rows + first non-filled row
-        for r in range(len(board.board)-1, -1, -1):
-            for c in range(len(board.board[r])):
-                if board.board[r][c] != 0:
-                    result += 5*(r/len(board.board))
-                elif board.board[r][c] == 0:
-                    if board.board[r-1][c] != 0:
-                        result -= 15
-                    fullRow = False
-
-            if fullRow:
-                result += 100
-            else:
-                result -= 3
-
-        if result < 0:
-            return result * (board.getHeight()+1)
-        return result / (board.getHeight()+1)
+        # Initiate a high heuristic value
+        heuristic_value = 10000000000
+        # Terminated game is always the least competitive
+        if board.isTerminal():
+            return 0
+        # Setting up some variables that will be used in calculation
+        # trace the highest point in the game
+        highest_point = -1
+        # trace the height difference from each column
+        height_difference = 0
+        # trace the total height of the game
+        total_height = 0
+        # mark the column already seen.
+        marked = dict()
+        board_matrix = board.board
+        for row in range(board.size[0]):
+            for col in range(board.size[1]):
+                current_space = board_matrix[row][col]
+                neighbor_full_space = 0
+                top_full_space = 0
+                if current_space == 0:
+                    # Check how many neighbor spaces are full
+                    try:
+                        if board_matrix[row+1][col] == 1:
+                            neighbor_full_space += 1
+                            top_full_space += 1
+                    except:
+                        IndexError
+                    try:
+                        if board_matrix[row-1][col] == 1:
+                            neighbor_full_space += 1
+                    except:
+                        IndexError
+                    try:
+                        if board_matrix[row][col+1] == 1:
+                            neighbor_full_space += 1
+                    except:
+                        IndexError
+                    try:
+                        if board_matrix[row][col-1] == 1:
+                            neighbor_full_space += 1
+                    except:
+                        IndexError
+                if top_full_space == 1:
+                    if neighbor_full_space == 4:
+                        heuristic_value -= 1500
+                    # if neighbor_full_space == 3:
+                    #     heuristic_value -= 100
+                    # if neighbor_full_space == 2:
+                    #     heuristic_value -= 80
+                # if top_full_space == 0:
+                #     heuristic_value -= 5000
+                # if current space is filled
+                if current_space == 1:
+                    # always gets the highest point in a column
+                    if not col in marked.keys():
+                        total_height += board.size[0] - row
+                        marked[col] = board.size[0] - row
+                    # update the highest point
+                    if board.size[0] - row > highest_point:
+                        highest_point = board.size[0] - row
+        # Calculate the height difference since we want our ai to put Tetromino well-distributed.
+        for i in range(board.size[1]):
+            if not i == 0 and marked.get(i) and marked.get(i-1):
+                height_difference += abs(marked[i] - marked[i - 1])
+        # the highest point is weighted really heavily since we want our ai to put Tetromino well-distributed.
+        return heuristic_value - highest_point * 1000 - total_height * 400 - height_difference * 100
 
     def getMoves(self):
         if self.board.fallingPiece is None:
             return
 
-        biggestHeuristic = -100000000
+        biggestHeuristic = 0
         biggestState = None
         validMoves = self.board.getValidMoves()
         for state in validMoves:
