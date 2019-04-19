@@ -5,6 +5,7 @@ class Benchmark:
         self.running = True
         self.playerMoved = False
         self.mustMoveDown = True
+        self.startTime = time.time()
         # initializing board
         self.board = Board()
         self.score = 0
@@ -23,37 +24,37 @@ class Benchmark:
         # prevents piece from moving through other pieces
         if self.board.isPieceDoneFalling():
             self.board.fallingPiece.moveX(1)
-            self.playerMoved = True
     def moveRight(self):
         self.board.fallingPiece.moveX(1)
         # prevents piece from moving through other pieces
         if self.board.isPieceDoneFalling():
             self.board.fallingPiece.moveX(-1)
-            self.playerMoved = True
     def moveDown(self):
         self.board.fallingPiece.moveDown(1)
         self.solidifyPieceIfNecessary()
         self.mustMoveDown = False
-        self.playerMoved = True
     def moveRotate(self):
         self.board.rotatePiece()
-        self.playerMoved = True
 
     def update(self):
+        time.sleep(0.02)
         # is game over?
         if self.board.isTerminal():
             self.running = False
 
+        if self.player.thread.is_alive() == False:
+            self.playerMoved = True
         self.player.update()
 
-        self.ticks += 1
-        if self.ticks < 1000 and not self.playerMoved:
+        if time.time()-self.startTime < 0.02 and not self.playerMoved:
             return
+        self.startTime = time.time()
+
         # if fallingPiece is none, make a new falling piece
         if self.board.fallingPiece is None:
             self.board.makeNewPiece()
             self.playerMoved = False
-        self.ticks = 0
+
         # add piece to board and if it did, check for cleared rows
         if self.mustMoveDown:
             self.board.fallingPiece.moveDown(1)
@@ -87,11 +88,11 @@ class Benchmark:
             self.score += 1200
 
 # main game loop
-'''
 totalScore = 0
 maxScore = 0
 minScore = 100000
-numGames = 25
+numGames = 5
+start = time.time()
 for i in range(numGames):
     bench = Benchmark(AIPlayer())
 
@@ -109,4 +110,6 @@ print()
 print("MAX SCORE: "+str(maxScore))
 print("MIN SCORE: "+str(minScore))
 print("AVERAGE SCORE: "+str(totalScore/numGames))
-print("NUM GAMES: "+str(numGames))'''
+print("NUM GAMES: "+str(numGames))
+print("TIME ELAPSED: "+str(time.time()-start))
+print("AVG TIME PER GAME: "+str((time.time()-start)/numGames))

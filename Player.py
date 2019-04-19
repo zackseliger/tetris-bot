@@ -60,28 +60,32 @@ class AIPlayer(Player):
 
     def heuristic(self, board):
         result = 0
-        emptyRow = False
+        fullRow = True
 
         # number of blocks on filled rows + first non-filled row
         for r in range(len(board.board)-1, -1, -1):
             for c in range(len(board.board[r])):
                 if board.board[r][c] != 0:
-                    result += 1
-                else:
-                    emptyRow = True
+                    result += 5*(r/len(board.board))
+                elif board.board[r][c] == 0:
+                    if board.board[r-1][c] != 0:
+                        result -= 15
+                    fullRow = False
 
-            if emptyRow == True:
-                break
+            if fullRow:
+                result += 100
             else:
-                result += 10
+                result -= 3
 
+        if result < 0:
+            return result * (board.getHeight()+1)
         return result / (board.getHeight()+1)
 
     def getMoves(self):
         if self.board.fallingPiece is None:
             return
 
-        biggestHeuristic = 0
+        biggestHeuristic = -100000000
         biggestState = None
         validMoves = self.board.getValidMoves()
         for state in validMoves:
