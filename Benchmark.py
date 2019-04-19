@@ -87,7 +87,7 @@ class Benchmark:
             self.score += 1200
 
 # main game loop
-pygame.init()
+'''
 totalScore = 0
 maxScore = 0
 minScore = 100000
@@ -109,4 +109,4 @@ print()
 print("MAX SCORE: "+str(maxScore))
 print("MIN SCORE: "+str(minScore))
 print("AVERAGE SCORE: "+str(totalScore/numGames))
-print("NUM GAMES: "+str(numGames))
+print("NUM GAMES: "+str(numGames))'''

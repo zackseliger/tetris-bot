@@ -63,7 +63,7 @@ class Window:
             return
         # moving pieces down and checking for finalizing piece position
         self.slowTimer += 1
-        if self.slowTimer < 5:
+        if self.slowTimer < 10:
             return
         self.slowTimer = 0
         # if fallingPiece is none, make a new falling piece
@@ -136,10 +136,9 @@ class Window:
         pygame.display.flip()
 
 # initializing our window
-'''pygame.init()
+pygame.init()
 window = Window(AIPlayer())
 # main game loop
 while window.running:
     window.update()
     window.draw()
-'''
