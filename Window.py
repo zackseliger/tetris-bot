@@ -43,7 +43,9 @@ class Window:
                 self.running = False
             if self.board.fallingPiece is not None:
                 # moving piece if we've recieved corresponding events
-                if event.type == userEventTypes['right']:
+                if event.type == userEventTypes['rotate']:
+                    self.board.rotatePiece()
+                elif event.type == userEventTypes['right']:
                     self.board.fallingPiece.moveX(1)
                     # prevents piece from moving through other pieces
                     if self.board.isPieceDoneFalling():
@@ -57,8 +59,6 @@ class Window:
                     self.board.fallingPiece.moveDown(1)
                     self.solidifyPieceIfNecessary()
                     self.mustMoveDown = False
-                elif event.type == userEventTypes['rotate']:
-                    self.board.rotatePiece()
         if self.gameOver:
             return
         # moving pieces down and checking for finalizing piece position
@@ -137,7 +137,7 @@ class Window:
 
 # initializing our window
 pygame.init()
-window = Window(AIPlayer())
+window = Window(ZackPlayer())
 # main game loop
 while window.running:
     window.update()

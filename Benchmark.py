@@ -91,10 +91,10 @@ class Benchmark:
 totalScore = 0
 maxScore = 0
 minScore = 100000
-numGames = 5
+numGames = 50
 start = time.time()
 for i in range(numGames):
-    bench = Benchmark(AIPlayer())
+    bench = Benchmark(ZackPlayer())
 
     while bench.running:
         bench.update()
