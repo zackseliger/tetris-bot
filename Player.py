@@ -1,6 +1,6 @@
 # Player class for Tetris
 import threading
-from Settings import *
+from settings import *
 import time
 from Board import *
 import math
@@ -151,6 +151,7 @@ class YifanPlayer(Player):
         # Initiate a high heuristic value
         heuristic_value = 10000000000
         # Terminated game is always the least competitive
+        board.checkTetris()
         if board.isTerminal():
             return 0
         # Setting up some variables that will be used in calculation
@@ -168,38 +169,57 @@ class YifanPlayer(Player):
                 current_space = board_matrix[row][col]
                 neighbor_full_space = 0
                 top_full_space = 0
-                if current_space == 0:
+                if current_space == 1:
                     # Check how many neighbor spaces are full
                     try:
-                        if board_matrix[row+1][col] == 1:
+                        if board_matrix[row+1][col] == 0:
                             neighbor_full_space += 1
-                            top_full_space += 1
+                            for i in range(board.size[0] - row):
+                                top_full_space += 1
                     except:
                         IndexError
                     try:
-                        if board_matrix[row-1][col] == 1:
-                            neighbor_full_space += 1
-                    except:
-                        IndexError
-                    try:
-                        if board_matrix[row][col+1] == 1:
+                        if board_matrix[row-1][col] == 0:
                             neighbor_full_space += 1
                     except:
                         IndexError
                     try:
-                        if board_matrix[row][col-1] == 1:
+                        if board_matrix[row][col+1] == 0:
+                            neighbor_full_space += 1
+                    except:
+                        IndexError
+                    try:
+                        if board_matrix[row][col-1] == 0:
                             neighbor_full_space += 1
                     except:
                         IndexError
                 if top_full_space == 1:
-                    if neighbor_full_space == 4:
-                        heuristic_value -= 1500
-                    # if neighbor_full_space == 3:
-                    #     heuristic_value -= 100
-                    # if neighbor_full_space == 2:
-                    #     heuristic_value -= 80
-                # if top_full_space == 0:
-                #     heuristic_value -= 5000
+                    heuristic_value -= 10000
+                    # if col > 0 and col < board.size[1] - 1 and row > 0 and row < board.size[0] - 1:
+                    #     if neighbor_full_space == 4:
+                    #         heuristic_value -= 16000
+                    #     if neighbor_full_space == 3:
+                    #         heuristic_value -= 600
+                    #     if neighbor_full_space == 2:
+                    #         heuristic_value -= 200
+                    # else:
+                    #     if col == 0 and row == 0 \
+                    #             or col == 0 and row == board.size[0] - 1 \
+                    #             or col == board.size[1] - 1 and row == 0\
+                    #             or col == board.size[1] - 1 and row == board.size[0] - 1:
+                    #         if neighbor_full_space == 2:
+                    #             heuristic_value -= 1800
+                    #         if neighbor_full_space == 1:
+                    #             heuristic_value -= 400
+                    #     else:
+                    #         if neighbor_full_space == 3:
+                    #             heuristic_value -= 1700
+                    #         if neighbor_full_space == 2:
+                    #             heuristic_value -= 700
+                    #         if neighbor_full_space == 1:
+                    #             heuristic_value -= 300
+                if top_full_space == 0:
+                    heuristic_value += 1
                 # if current space is filled
                 if current_space == 1:
                     # always gets the highest point in a column
@@ -213,8 +233,12 @@ class YifanPlayer(Player):
         for i in range(board.size[1]):
             if not i == 0 and marked.get(i) and marked.get(i-1):
                 height_difference += abs(marked[i] - marked[i - 1])
+            if not i == 0 and not marked.get(i) and marked.get(i-1):
+                height_difference += 20
+            if not i == 0 and marked.get(i) and not marked.get(i-1):
+                height_difference += 20
         # the highest point is weighted really heavily since we want our ai to put Tetromino well-distributed.
-        return heuristic_value - highest_point * 1000 - total_height * 400 - height_difference * 100
+        return heuristic_value - highest_point * 173 - total_height * 397 - height_difference * 97
 
     def getMoves(self):
         if self.board.fallingPiece is None:
@@ -222,68 +246,6 @@ class YifanPlayer(Player):
             return
 
         biggestHeuristic = 0
-        biggestState = None
-        validMoves = self.board.getValidMoves()
-        for state in validMoves:
-            hValue = self.heuristic(Board(state[1]))
-            if hValue > biggestHeuristic:
-                biggestHeuristic = hValue
-                biggestState = state
-
-        if biggestState is not None and self.goalState != biggestState[1]:
-            a = self.board.fallingPiece.rotationState
-            while a != biggestState[0][1]:
-                self.moveRotate()
-                a += 1
-                if a > 3:
-                    a = 0
-                if self.board.fallingPiece.type == 1 and a > 1:
-                    a = 0
-                if self.board.fallingPiece.type == 2:
-                    a = 0
-            for i in range(abs(biggestState[0][0])):
-                if biggestState[0][0] > 0:
-                    self.moveRight()
-                if biggestState[0][0] < 0:
-                    self.moveLeft()
-            self.goalState = biggestState[1]
-
-class DrewPlayer(Player):
-    def __init__(self):
-        super().__init__()
-        self.goalState = None
-        self.savedStates = {}
-
-    def heuristic(self, board):
-        # start at bottom len(board.board) - 1, go up
-        if board.isTerminal():
-            return 0
-        height = board.getHeight()
-        hVal = height
-        for row in range(len(board.board) - 1, height - 1, -1):
-            for col in range(len(board.board[row])):
-                if board.board[row][col] == 0:
-                    if board.board[row-1][col] == 0:
-                        try:
-                            if board.board[row][col+1] == 0:
-                                if board.board[row][col-1] == 0:
-                                    hVal += 300
-                        except IndexError:
-                            pass
-                    else:
-                        hVal -= 100
-                else:
-                    hVal += 1
-
-        self.savedStates[board.getState()] = hVal
-        return hVal
-
-    def getMoves(self):
-        if self.board.fallingPiece is None:
-            self.goalState = None
-            return
-
-        biggestHeuristic = -100000000
         biggestState = None
         validMoves = self.board.getValidMoves()
         for state in validMoves:
