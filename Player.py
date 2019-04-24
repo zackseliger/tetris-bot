@@ -175,7 +175,8 @@ class YifanPlayer(Player):
                         if board_matrix[row+1][col] == 0:
                             neighbor_full_space += 1
                             for i in range(board.size[0] - row):
-                                top_full_space += 1
+                                if board_matrix[row+i][col] == 0:
+                                    top_full_space += 1
                     except:
                         IndexError
                     try:
@@ -194,7 +195,9 @@ class YifanPlayer(Player):
                     except:
                         IndexError
                 if top_full_space == 1:
-                    heuristic_value -= 10000
+                    heuristic_value -= 1000000
+                    if neighbor_full_space == 4:
+                        heuristic_value -= 1000000
                     # if col > 0 and col < board.size[1] - 1 and row > 0 and row < board.size[0] - 1:
                     #     if neighbor_full_space == 4:
                     #         heuristic_value -= 16000
@@ -234,11 +237,13 @@ class YifanPlayer(Player):
             if not i == 0 and marked.get(i) and marked.get(i-1):
                 height_difference += abs(marked[i] - marked[i - 1])
             if not i == 0 and not marked.get(i) and marked.get(i-1):
-                height_difference += 20
+                height_difference += 200
             if not i == 0 and marked.get(i) and not marked.get(i-1):
-                height_difference += 20
+                height_difference += 200
+            # if i == board.size[1]-1 or i == 0:
+            #     height_difference += 2000
         # the highest point is weighted really heavily since we want our ai to put Tetromino well-distributed.
-        return heuristic_value - highest_point * 173 - total_height * 397 - height_difference * 97
+        return heuristic_value - highest_point * 1 - total_height * 297 - height_difference * 97
 
     def getMoves(self):
         if self.board.fallingPiece is None:
