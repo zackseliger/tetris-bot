@@ -276,3 +276,66 @@ class YifanPlayer(Player):
                 if biggestState[0][0] < 0:
                     self.moveLeft()
             self.goalState = biggestState[1]
+
+    
+class DrewPlayer(Player):
+    def __init__(self):
+        super().__init__()
+        self.goalState = None
+        self.savedStates = {}
+
+    def heuristic(self, board):
+        # start at bottom len(board.board) - 1, go up
+        if board.isTerminal():
+            return 0
+        height = board.getHeight()
+        hVal = height
+        for row in range(len(board.board) - 1, height - 1, -1):
+            for col in range(len(board.board[row])):
+                if board.board[row][col] == 0:
+                    if board.board[row-1][col] == 0:
+                        try:
+                            if board.board[row][col+1] == 0:
+                                if board.board[row][col-1] == 0:
+                                    hVal += 300
+                        except IndexError:
+                            pass
+                    else:
+                        hVal -= 100
+                else:
+                    hVal += 1
+
+        self.savedStates[board.getState()] = hVal
+        return hVal
+
+    def getMoves(self):
+        if self.board.fallingPiece is None:
+            self.goalState = None
+            return
+
+        biggestHeuristic = -100000000
+        biggestState = None
+        validMoves = self.board.getValidMoves()
+        for state in validMoves:
+            hValue = self.heuristic(Board(state[1]))
+            if hValue > biggestHeuristic:
+                biggestHeuristic = hValue
+                biggestState = state
+
+        if biggestState is not None and self.goalState != biggestState[1]:
+            a = self.board.fallingPiece.rotationState
+            while a != biggestState[0][1]:
+                self.moveRotate()
+                a += 1
+                if a > 3:
+                    a = 0
+                if self.board.fallingPiece.type == 1 and a > 1:
+                    a = 0
+                if self.board.fallingPiece.type == 2:
+                    a = 0
+            for i in range(abs(biggestState[0][0])):
+                if biggestState[0][0] > 0:
+                    self.moveRight()
+                if biggestState[0][0] < 0:
+                    self.moveLeft()
+            self.goalState = biggestState[1]
