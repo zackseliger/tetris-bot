@@ -1,6 +1,6 @@
 # Player class for Tetris
 import threading
-from settings import *
+from Settings import *
 import time
 from Board import *
 import math
@@ -150,100 +150,62 @@ class YifanPlayer(Player):
     def heuristic(self, board):
         # Initiate a high heuristic value
         heuristic_value = 10000000000
-        # Terminated game is always the least competitive
+        # Update the board and clear out those rows that are completely filled
         board.checkTetris()
+        # Terminated game is always the least competitive
         if board.isTerminal():
             return 0
         # Setting up some variables that will be used in calculation
-        # trace the highest point in the game
-        highest_point = -1
         # trace the height difference from each column
         height_difference = 0
         # trace the total height of the game
         total_height = 0
         # mark the column already seen.
         marked = dict()
+        # Get the board
         board_matrix = board.board
+        # Double nested loop that goes through each space
         for row in range(board.size[0]):
             for col in range(board.size[1]):
                 current_space = board_matrix[row][col]
-                neighbor_full_space = 0
-                top_full_space = 0
+                # Those spaces that are filled with an empty space which is at least one column below them will
+                # reduce the heuristic significantly since those empty spaces are considered as holes that cannot reach
+                # easily.
+                bot_empty_space = 0
                 if current_space == 1:
-                    # Check how many neighbor spaces are full
+                    # Check how many spaces below that are empty
                     try:
-                        if board_matrix[row+1][col] == 0:
-                            neighbor_full_space += 1
+                        if board_matrix[row + 1][col] == 0:
                             for i in range(board.size[0] - row):
-                                if board_matrix[row+i][col] == 0:
-                                    top_full_space += 1
+                                if board_matrix[row + i][col] == 0:
+                                    bot_empty_space += 1
                     except:
                         IndexError
-                    try:
-                        if board_matrix[row-1][col] == 0:
-                            neighbor_full_space += 1
-                    except:
-                        IndexError
-                    try:
-                        if board_matrix[row][col+1] == 0:
-                            neighbor_full_space += 1
-                    except:
-                        IndexError
-                    try:
-                        if board_matrix[row][col-1] == 0:
-                            neighbor_full_space += 1
-                    except:
-                        IndexError
-                if top_full_space == 1:
-                    heuristic_value -= 1000000
-                    if neighbor_full_space == 4:
-                        heuristic_value -= 1000000
-                    # if col > 0 and col < board.size[1] - 1 and row > 0 and row < board.size[0] - 1:
-                    #     if neighbor_full_space == 4:
-                    #         heuristic_value -= 16000
-                    #     if neighbor_full_space == 3:
-                    #         heuristic_value -= 600
-                    #     if neighbor_full_space == 2:
-                    #         heuristic_value -= 200
-                    # else:
-                    #     if col == 0 and row == 0 \
-                    #             or col == 0 and row == board.size[0] - 1 \
-                    #             or col == board.size[1] - 1 and row == 0\
-                    #             or col == board.size[1] - 1 and row == board.size[0] - 1:
-                    #         if neighbor_full_space == 2:
-                    #             heuristic_value -= 1800
-                    #         if neighbor_full_space == 1:
-                    #             heuristic_value -= 400
-                    #     else:
-                    #         if neighbor_full_space == 3:
-                    #             heuristic_value -= 1700
-                    #         if neighbor_full_space == 2:
-                    #             heuristic_value -= 700
-                    #         if neighbor_full_space == 1:
-                    #             heuristic_value -= 300
-                if top_full_space == 0:
+                # Punish those boards with one space filled above and at least one spaces below that are empty with
+                # lower heuristic values
+                if bot_empty_space >= 1:
+                    heuristic_value -= 1000000 * bot_empty_space
+                if bot_empty_space == 0:
                     heuristic_value += 1
                 # if current space is filled
                 if current_space == 1:
                     # always gets the highest point in a column
                     if not col in marked.keys():
-                        total_height += board.size[0] - row
-                        marked[col] = board.size[0] - row
-                    # update the highest point
-                    if board.size[0] - row > highest_point:
-                        highest_point = board.size[0] - row
+                        current_height = board.size[0] - row
+                        total_height += current_height
+                        marked[col] = current_height
         # Calculate the height difference since we want our ai to put Tetromino well-distributed.
         for i in range(board.size[1]):
-            if not i == 0 and marked.get(i) and marked.get(i-1):
-                height_difference += abs(marked[i] - marked[i - 1])
-            if not i == 0 and not marked.get(i) and marked.get(i-1):
-                height_difference += 200
-            if not i == 0 and marked.get(i) and not marked.get(i-1):
-                height_difference += 200
-            # if i == board.size[1]-1 or i == 0:
-            #     height_difference += 2000
+            current_col = marked.get(i)
+            prev_col = marked.get(i - 1)
+            if not i == 0 and current_col and prev_col:
+                height_difference += abs(current_col - prev_col)
+            if not i == 0 and not current_col and prev_col:
+                height_difference += prev_col
+            if not i == 0 and current_col and not prev_col:
+                height_difference += current_col
         # the highest point is weighted really heavily since we want our ai to put Tetromino well-distributed.
-        return heuristic_value - highest_point * 1 - total_height * 297 - height_difference * 97
+        return heuristic_value - total_height * 297 - height_difference * 97
 
     def getMoves(self):
         if self.board.fallingPiece is None:
