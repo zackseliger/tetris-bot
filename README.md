@@ -1,28 +1,17 @@
-# tetris
-Final project for CSCI-B351
+# Tetris
+Final project for CSCI-B351.
 
-There are three artificial intelligence players: YifanPlayer, ZackPlayer, DrewPlayer
+### Prerequisites
+Pygame is needed to run our project. You can install it with 'pip install pygame'
 
-To play the game: run the Window class, using the keyboard responsive HumanPlayer()
-  left to move piece left, right to move piece right, down to push piece down, up to rotate
-If you want to switch between different AIs and human player, change the input in line 147 in Window.py or in line 112 in benchmark.py
-To run tests: run the Benchmark class, using any artificial intelligence player
-  To alter the number of tests or the player being tested: go to the marked lines within Benchmark
-Please notice: running tests could take a lot of time due to game playing, try to run 1 or 2 tests to estimate the time the program would cost at first
-** if using one of the three artificial players, running Window or Benchmark will throw
-    an error every time a piece lands because it is updating the heuristic in between
-    landing the piece and getting the next piece. Does not affect gameplay**
-To alter the board size configurations: use the Settings.py class
-  This class also holds shortcuts for userEvents and their Types
+### How to run
+We have two parts to our project - a live game and a benchmarking toolset. The game resides in Window.py, and the benchmarks lie in Benchmark.py. Run the file that you want to.
 
-The piece falling down is called a Tetromino, a filled row is called a Tetris
-Board.py holds a copy of a piece, a matrix of filled coordinate positions, and a bag of possible types to cycle through.
-  -can return the max height of filled pieces, a copy of itself, a list of valid moves to make
-  -can rotate, make a singular move or even completely push down their piece, check whether its reached the bottom
-  -can check whether a row should be cleared, whether the filled pieces have reached the top
-Player.py is a superclass which contains getMoves(which each subclass overrides), an update function for 
-  the thread, and the moves: right, left, down, and rotate. 
-  -Each subclass overrides their getMoves to use the various moves.
-Window.py has a board, piece and uses them to run the game
-  -can represent board and piece on pygame, checks and removes full rows, solidifies pieces when done falling, 
-  -updates taking into consideration other thread, pygame events
+### Adjusting Parameters
+In Window.py, the constructor for Window takes a Player parameter, as does the Benchmark class in Benchmark.py. We have 4 players:
+* HumanPlayer - you can play the game! Only used for debug, and as such, we didn't polish. Input feels really clunky.
+* ZackPlayer - The Player that Zack made (named Zackie). Has the lowest average score and is the slowest.
+* DrewPlayer - The Player that Andrew made (named Brock). Has a fair average score and is the fastest.
+* YifanPlayer - The Player that Yifan made (named Numera). Has the highest average score (by a wide margin) and is fairly quick.
+
+Additionally, you may want to adjust the amount of games that Benchmark.py runs. It can be near the bottom of the file, in a variable called `numGames`.
