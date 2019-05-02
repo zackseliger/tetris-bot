@@ -72,17 +72,16 @@ class ZackPlayer(Player):
         if board.isTerminal():
             return -100000
 
-        # number of blocks on filled rows + first non-filled row
+        # modify copy of board to not have full rows
+        filledRows = board.checkTetris()
+        result += 50*filledRows
+
+        # check for holes
         for r in range(len(board.board)-1, -1, -1):
-            fullRow = True
             for c in range(len(board.board[r])):
                 if board.board[r][c] == 0:
-                    if r != 0 and board.board[r-1][c] != 0:
-                        result -= 110
-                        pass
-                    fullRow = False
-            if fullRow:
-                result += 50
+                    if r != 0 and board.board[r - 1][c] != 0:
+                        result -= 50
 
         # find highest height
         maxHeight = 0
@@ -99,8 +98,7 @@ class ZackPlayer(Player):
             for r in range(len(board.board) - 1, -1, -1):
                 if board.board[r][c] != 0:
                     numSquares += 1
-            result -= (maxHeight - numSquares) * 5
-        #result -= board.getHeight() * 10
+            result -= (maxHeight - numSquares) * 2
 
         # save result into dictionary
         self.savedStates[boardState] = result
