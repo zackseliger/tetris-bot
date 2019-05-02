@@ -1,12 +1,14 @@
 import pygame
-import random
-from Tetromino import Tetromino
 from Settings import *
 from Board import Board
 from Player import *
 
+
 class Window:
     def __init__(self, player):
+        """initalizes the screen and clock from pygame, the text
+        slows down player to avoid too much updating
+        initializes the player, the board"""
         self.running = True
         self.screen = pygame.display.set_mode((500, 600))
         self.clock = pygame.time.Clock()
@@ -26,6 +28,7 @@ class Window:
         self.player.setBoard(self.board)
 
     def update(self):
+        """Handles the update of the board and falling piece for this thread"""
         # sleeping to the tune of 'maxfps' fps
         self.clock.tick(config['maxfps'])
 
@@ -104,7 +107,8 @@ class Window:
         self.scoreText = self.font.render(str(self.score), True, (255, 255, 255))
 
     def draw(self):
-        self.screen.fill((0,0,0))
+        """draws representaiton of board and falling piece through pygame"""
+        self.screen.fill((0, 0,0))
         board_array = self.board.getBoard()
         # drawing the board
         fallingPiece = None
@@ -135,8 +139,11 @@ class Window:
 
         pygame.display.flip()
 
+
 # initializing our window
 pygame.init()
+"""WHERE TO EDIT TO CHANGE PLAYER
+    HumanPlayer()   ZackPlayer()    YifanPlayer()    DrewPlayer()"""
 window = Window(ZackPlayer())
 # main game loop
 while window.running:

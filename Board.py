@@ -4,11 +4,14 @@ from Tetromino import *
 import random
 import math
 
+
 class Board:
     def __init__(self, state=None):
+        """initializes board as empty or thru eval of given state, bag
+        (to cycle thru), size (from given Settings class), fallingPiece (new Tetromino)"""
         self.board = []
         self.size = config["rows"], config["cols"]
-        self.bag = [1,2,3,4,5,6,7]
+        self.bag = [1, 2, 3, 4, 5, 6, 7]
         self.fallingPiece = None
         self.makeNewPiece()
         for r in range(self.size[0]):
@@ -35,6 +38,7 @@ class Board:
         return state
 
     def makeCopy(self):
+        """Copies the Board exactly, without being a reference to the original"""
         result = Board(self.getState())
         pieceState = self.fallingPiece.getState()
         newPiece = Tetromino(pieceState[2])
@@ -42,8 +46,8 @@ class Board:
         result.fallingPiece = newPiece
         return result
 
-    # height is the number of rows that have a block in them
     def getHeight(self):
+        """Returns the maximum height a column of placed blocks has reached"""
         currHeight = 0
         for r in range(len(self.board)-1, -1, -1):
             foundBlock = False
@@ -67,15 +71,19 @@ class Board:
         return is_over
 
     def setPiece(self, tetr):
+        """Sets the Board's falling Tetromino to a given Tetromino"""
         self.fallingPiece = Tetromino(tetr.type)
         self.fallingPiece.setState(tetr.getState())
 
     def makePieceFall(self):
+        """Pushes the piece completely down the board"""
         while not self.isPieceDoneFalling():
             self.fallingPiece.moveDown(1)
         self.fallingPiece.moveDown(-1)
 
     def getValidMoves(self):
+        """Returns a list of tuple associations that correlate to the distance to cover
+        and rotations to make to get the Tetromino to the corresponding state"""
         result = []
         initialBoard = self.makeCopy()
         rotationStates = []
@@ -207,6 +215,8 @@ class Board:
         return False
 
     def makeNewPiece(self):
+        """Changes falling piece to a random configuration of one,
+        using the bag to ensure that the piece types are cycling through"""
         if len(self.bag) == 0:
             self.bag = [1, 2, 3, 4, 5, 6, 7]
         randInt = random.choice(self.bag)
@@ -214,6 +224,7 @@ class Board:
         self.fallingPiece = Tetromino(randInt)
 
     def print(self):
+        """prints string representation of board"""
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
                 inPiece = False

@@ -1,55 +1,57 @@
 import math
 from Settings import config
 
+
 class Tetromino:
     def __init__(self, type):
+        """Initializes the initial coordinate points,
+        given the type (1-7)"""
         self.type = type
         self.points = []
         c = 5  # c for center
         self.rotationState = 0
-
-        if self.type == 1:#'I'
+        if self.type == 1:  # 'I'
             self.points.append((0, c))
-            self.points.append((0,c+1))
+            self.points.append((0, c+1))
             self.points.append((0, c - 2))
             self.points.append((0, c - 1))
-        elif self.type == 2:#'O'
-            self.points.append((0,c))
-            self.points.append((0,c+1))
-            self.points.append((-1,c))
-            self.points.append((-1,c+1))
-        elif self.type == 3:#'S'
-            self.points.append((0,c))
-            self.points.append((0,c-1))
-            self.points.append((-1,c))
-            self.points.append((-1,c+1))
-        elif self.type == 4:#'Z'
-            self.points.append((0,c))
-            self.points.append((0,c+1))
-            self.points.append((-1,c))
-            self.points.append((-1,c-1))
-        elif self.type == 5:#'J'
-            self.points.append((0,c))
-            self.points.append((0,c+1))
-            self.points.append((0,c-1))
-            self.points.append((-1,c-1))
-        elif self.type == 6:#'L'
-            self.points.append((0,c))
-            self.points.append((0,c-1))
-            self.points.append((0,c+1))
-            self.points.append((-1,c+1))
-        elif self.type == 7:#'T'
-            self.points.append((-1,c))
-            self.points.append((-1,c-1))
-            self.points.append((-1,c+1))
-            self.points.append((0,c))
-
+        elif self.type == 2:  # 'O'
+            self.points.append((0, c))
+            self.points.append((0, c+1))
+            self.points.append((-1, c))
+            self.points.append((-1, c+1))
+        elif self.type == 3:  # 'S'
+            self.points.append((0, c))
+            self.points.append((0, c-1))
+            self.points.append((-1, c))
+            self.points.append((-1, c+1))
+        elif self.type == 4:  # 'Z'
+            self.points.append((0, c))
+            self.points.append((0, c+1))
+            self.points.append((-1, c))
+            self.points.append((-1, c-1))
+        elif self.type == 5:  # 'J'
+            self.points.append((0, c))
+            self.points.append((0, c+1))
+            self.points.append((0, c-1))
+            self.points.append((-1, c-1))
+        elif self.type == 6:  # 'L'
+            self.points.append((0, c))
+            self.points.append((0, c-1))
+            self.points.append((0, c+1))
+            self.points.append((-1, c+1))
+        elif self.type == 7:  # 'T'
+            self.points.append((-1, c))
+            self.points.append((-1, c-1))
+            self.points.append((-1, c+1))
+            self.points.append((0, c))
 
     def getPoints(self):
+        """returns list of coordinate points that the piece occupies"""
         return self.points
 
-    # moves tetromino down by amt, with error checking
     def moveDown(self, amt):
+        """moves tetromino down by amt, with error checking"""
         # if already at bottom, can't go further down
         for i in range(len(self.points)):
             if self.points[i][1]+amt > config['rows']:
@@ -58,12 +60,12 @@ class Tetromino:
         for i in range(len(self.points)):
             self.points[i] = (self.points[i][0]+amt, self.points[i][1])
 
-    # moves tetromino to the side by amt, with error checking
     def moveX(self, amt):
+        """moves tetromino to the side by amt, with error checking"""
         for i in range(len(self.points)):
             self.points[i] = (self.points[i][0], self.points[i][1]+amt)
 
-        # check bounds and reverse if overstepped
+        # check if in bounds and reverse if overstepped
         for point in self.points:
             if point[1] < 0 or point[1] >= config['cols']:
                 for i in range(len(self.points)):
@@ -71,15 +73,19 @@ class Tetromino:
                 return False
 
     def getState(self):
+        """ represents state of tetromino as the list of
+        current coordinate points, the rotation and type of piece"""
         return [self.points.copy(), self.rotationState, self.type]
 
     def setState(self, state):
+        """given state, replace coord points, rotation and type of piece"""
         self.points = state[0]
         self.rotationState = state[1]
         self.type = state[2]
 
-    # rotates tetronimo
     def rotate(self, times):
+        """makes "times" number of rotates piece, taking into consideration
+        type of piece and position on board"""
         # some shapes only get rotated in some ways
         if self.type == 2:
             return

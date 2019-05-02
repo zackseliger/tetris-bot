@@ -1,7 +1,11 @@
 from Player import *
 
+
 class Benchmark:
+    """This class takes the necessary methods from Window and runs
+    tests in real-time on the given player through an arbitrary number of tests"""
     def __init__(self, player):
+        """initializes player, board, time"""
         self.running = True
         self.playerMoved = False
         self.mustMoveDown = True
@@ -20,23 +24,31 @@ class Benchmark:
         self.player.update()
 
     def moveLeft(self):
+        """moves the Tetromino one tile to the left"""
         self.board.fallingPiece.moveX(-1)
         # prevents piece from moving through other pieces
         if self.board.isPieceDoneFalling():
             self.board.fallingPiece.moveX(1)
+
     def moveRight(self):
+        """moves the Tetromino one tile to the right"""
         self.board.fallingPiece.moveX(1)
         # prevents piece from moving through other pieces
         if self.board.isPieceDoneFalling():
             self.board.fallingPiece.moveX(-1)
+
     def moveDown(self):
+        """moves the Tetromino one tile down"""
         self.board.fallingPiece.moveDown(1)
         self.solidifyPieceIfNecessary()
         self.mustMoveDown = False
+
     def moveRotate(self):
+        """rotates the piece once"""
         self.board.rotatePiece()
 
     def update(self):
+        """makes moves given the player"""
         time.sleep(0.02)
         # is game over?
         if self.board.isTerminal():
@@ -87,14 +99,17 @@ class Benchmark:
         elif numRows == 4:
             self.score += 1200
 
+
 # main game loop
 totalScore = 0
 maxScore = 0
 minScore = 100000
+"""WHERE TO EDIT TO CHANGE NUMBER OF TEST GAMES"""
 numGames = 50
 start = time.time()
 for i in range(numGames):
-    bench = Benchmark(ZackPlayer())
+    """WHERE TO EDIT TO CHANGE PLAYER"""
+    bench = Benchmark(DrewPlayer())
 
     while bench.running:
         bench.update()

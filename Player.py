@@ -1,36 +1,44 @@
-# Player class for Tetris
 import threading
 from Settings import *
 import time
 from Board import *
-import math
 
 
 class Player:
     def __init__(self):
+        """initializes the player's thread and internal copy of the board"""
         self.thread = threading.Thread(target= self.getMoves)
         self.board = Board()
 
     def getMoves(self):
+        """determines and makes moves
+            overridden by each Player subclass"""
         pass
 
     def setBoard(self, board):
+        """sets the player's internal board to the given"""
         self.board = board
 
     # the explicit definitions for sending events
     def moveLeft(self):
+        """moves the Tetromino one tile to the left"""
         pygame.event.post(userEvents['left'])
 
     def moveRight(self):
+        """moves the Tetromino one tile to the right"""
         pygame.event.post(userEvents['right'])
 
     def moveDown(self):
+        """moves the Tetromino one tile down"""
         pygame.event.post(userEvents['down'])
 
     def moveRotate(self):
+        """rotates the piece once"""
         pygame.event.post(userEvents['rotate'])
 
     def update(self):
+        """starts the player thread using
+        the given subclasses' getMoves functions"""
         if self.thread.is_alive() == False:
             self.thread = threading.Thread(target=self.getMoves)
             self.thread.start()
@@ -40,7 +48,7 @@ class HumanPlayer(Player):
 
     def getMoves(self):
         """Overrides parent function of same name
-        to ask user for moves"""
+        to ask user for moves and make them accordingly"""
         time.sleep(0.1)  # so that keyboard inputs aren't recognized too quickly
 
         # checking keys and possibly sending events
@@ -54,13 +62,19 @@ class HumanPlayer(Player):
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.moveRotate()
 
+
 class ZackPlayer(Player):
     def __init__(self):
+        """starts the thread thru the parent, initializes goalState
+        and savedState (cache of board states and their heuristics)"""
         super().__init__()
         self.goalState = None
         self.savedStates = {}
 
     def heuristic(self, board):
+        """Evaluates given board taking into consideration holes and
+        height difference (higher scores = better board)
+            caches each by boardState (string), heuristic value (int)"""
         result = 0
         boardState = board.getState()
 
@@ -107,6 +121,8 @@ class ZackPlayer(Player):
         return result
 
     def getMoves(self):
+        """Uses heuristic to find the best state with the piece placed
+        and moves the piece accordingly"""
         if self.board.fallingPiece is None:
             self.goalState = None
             return
@@ -140,12 +156,16 @@ class ZackPlayer(Player):
 
         return biggestState[0]
 
+
 class YifanPlayer(Player):
     def __init__(self):
+        """starts the thread thru the parent, initializes goalState"""
         super().__init__()
         self.goalState = None
 
     def heuristic(self, board):
+        """determines value of given board, taking into consideration
+            holes and height difference (higher scores = better board)"""
         # Initiate a high heuristic value
         heuristic_value = 10000000000
         # Update the board and clear out those rows that are completely filled
@@ -206,6 +226,8 @@ class YifanPlayer(Player):
         return heuristic_value - total_height * 297 - height_difference * 97
 
     def getMoves(self):
+        """Uses heuristic to find the best state with the piece placed
+        and moves the piece accordingly"""
         if self.board.fallingPiece is None:
             self.goalState = None
             return
@@ -239,17 +261,26 @@ class YifanPlayer(Player):
 
     
 class DrewPlayer(Player):
+    """This Player is affectionately known by his nickname, Brock"""
     def __init__(self):
+        """starts the thread thru the parent, initializes goalState
+        and savedState (cache of board states and their heuristics)"""
         super().__init__()
         self.goalState = None
         self.savedStates = {}
 
     def heuristic(self, board):
-        # start at bottom len(board.board) - 1, go up
+        """Evaluates given board taking into consideration holes and
+        height difference (higher scores = better board)
+            caches each by boardState (string), heuristic value (int)"""
         if board.isTerminal():
             return 0
         height = board.getHeight()
-        hVal = height
+        hVal = -height
+        # start at bottom len(board.board) - 1, go up
+        if board.getState() in self.savedStates:
+            return self.savedStates[board.getState()]
+
         for row in range(len(board.board) - 1, height - 1, -1):
             for col in range(len(board.board[row])):
                 if board.board[row][col] == 0:
@@ -269,10 +300,11 @@ class DrewPlayer(Player):
         return hVal
 
     def getMoves(self):
+        """Uses heuristic to find the best state with the piece placed
+        and moves the piece accordingly"""
         if self.board.fallingPiece is None:
             self.goalState = None
             return
-
         biggestHeuristic = -100000000
         biggestState = None
         validMoves = self.board.getValidMoves()
