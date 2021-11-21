@@ -144,7 +144,7 @@ class Window:
 pygame.init()
 """WHERE TO EDIT TO CHANGE PLAYER
     HumanPlayer()   ZackPlayer()    YifanPlayer()    DrewPlayer()"""
-window = Window(ZackPlayer())
+window = Window(YifanPlayer())
 # main game loop
 while window.running:
     window.update()
